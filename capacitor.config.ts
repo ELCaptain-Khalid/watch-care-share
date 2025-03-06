@@ -10,7 +10,12 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
-    // We'll add AdMob configuration here in the future
+    AdMob: {
+      appId: {
+        ios: 'ca-app-pub-3940256099942544~1458002511',  // Test App ID
+        android: 'ca-app-pub-3940256099942544~3347511713'  // Test App ID
+      }
+    }
   }
 };
 

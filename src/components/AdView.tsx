@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Play, CheckCircle, DollarSign, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
+import { adMobService } from "@/services/AdMobService";
 
 export const AdView = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,23 +27,46 @@ export const AdView = () => {
     setIsLoading(true);
     setCompleted(false);
     
-    // Simulate ad loading
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsWatching(true);
-      setProgress(0);
-      
-      // Simulate ad progress
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
+    // On mobile, show a real rewarded ad
+    if (window.Capacitor) {
+      adMobService.showRewardedAd(
+        // onReward callback
+        (reward) => {
+          console.log(`User earned reward: ${reward.amount} ${reward.type}`);
+          setCompleted(true);
+        },
+        // onDismiss callback
+        () => {
+          setIsLoading(false);
+          // If the ad was dismissed without getting a reward, reset
+          if (!completed) {
+            toast({
+              title: "Ad dismissed",
+              description: "Please watch the entire ad to contribute.",
+              variant: "destructive",
+            });
           }
-          return prev + 5;
-        });
-      }, 300);
-    }, 1500);
+        }
+      );
+    } else {
+      // Web simulation (for development)
+      setTimeout(() => {
+        setIsLoading(false);
+        setIsWatching(true);
+        setProgress(0);
+        
+        // Simulate ad progress
+        const interval = setInterval(() => {
+          setProgress((prev) => {
+            if (prev >= 100) {
+              clearInterval(interval);
+              return 100;
+            }
+            return prev + 5;
+          });
+        }, 300);
+      }, 1500);
+    }
   };
   
   const resetView = () => {
