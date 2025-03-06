@@ -4,6 +4,7 @@ import { ImpactCard } from "@/components/ImpactCard";
 import { Stats } from "@/components/Stats";
 import { ArrowRightCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const causes = [
   {
@@ -30,6 +31,8 @@ const causes = [
 ];
 
 const Index = () => {
+  const { ref, isVisible } = useScrollReveal({ threshold: 0.1 });
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Hero />
@@ -37,9 +40,10 @@ const Index = () => {
       
       <div className="container mx-auto px-4 py-16">
         <motion.div
+          ref={ref as any}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
           className="mb-12 text-center"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -52,15 +56,15 @@ const Index = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {causes.map((cause, index) => (
-            <ImpactCard key={index} {...cause} />
+            <ImpactCard key={index} {...cause} delay={index * 3} />
           ))}
         </div>
         
         <motion.div 
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.5, delay: 0.9 }}
         >
           <a 
             href="#" 
