@@ -2,6 +2,7 @@
 import { Hero } from "@/components/Hero";
 import { ImpactCard } from "@/components/ImpactCard";
 import { Stats } from "@/components/Stats";
+import { StoryCarousel } from "@/components/StoryCarousel";
 import { ArrowRightCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -74,6 +75,10 @@ const Index = () => {
             <ArrowRightCircle className="ml-2 h-5 w-5" />
           </a>
         </motion.div>
+      </div>
+      
+      <div className="bg-gray-100/70 py-16">
+        <StoryCarousel />
       </div>
     </div>
   );

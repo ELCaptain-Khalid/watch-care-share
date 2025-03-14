@@ -7,7 +7,8 @@ import { motion } from "framer-motion";
 export const Hero = () => {
   return (
     <div className="relative overflow-hidden bg-gradient-to-b from-primary/20 to-white py-16 sm:py-24">
-      <div className="absolute inset-0 bg-[url('/pattern-bg.svg')] opacity-10"></div>
+      <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-20"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/40 via-white/80 to-white"></div>
       <div className="container relative mx-auto px-4">
         <motion.div 
           className="max-w-2xl mx-auto text-center"
@@ -26,7 +27,7 @@ export const Hero = () => {
             change. Every ad you watch contributes to meaningful causes - from
             education to environmental protection.
           </p>
-          <div className="mt-12 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-100">
+          <div className="mt-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 border border-gray-100">
             <AdView />
           </div>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-6">

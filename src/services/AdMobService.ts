@@ -72,11 +72,11 @@ class AdMobService {
 
     try {
       // Listen for the ad to be dismissed
-      const dismissListener = AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
+      const dismissListenerPromise = AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
         console.log('Interstitial ad dismissed');
         if (onDismiss) onDismiss();
         // Remove listener after use
-        dismissListener.remove();
+        dismissListenerPromise.then(listener => listener.remove());
       });
 
       await AdMob.prepareInterstitial(options);
@@ -98,18 +98,18 @@ class AdMobService {
 
     try {
       // Listen for reward
-      const rewardListener = AdMob.addListener(RewardAdPluginEvents.Rewarded, (info: AdMobRewardItem) => {
+      const rewardListenerPromise = AdMob.addListener(RewardAdPluginEvents.Rewarded, (info: AdMobRewardItem) => {
         console.log('Rewarded ad reward received:', info);
         if (onReward) onReward(info);
       });
 
       // Listen for dismissal
-      const dismissListener = AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+      const dismissListenerPromise = AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
         console.log('Rewarded ad dismissed');
         if (onDismiss) onDismiss();
         // Remove listeners after use
-        rewardListener.remove();
-        dismissListener.remove();
+        rewardListenerPromise.then(listener => listener.remove());
+        dismissListenerPromise.then(listener => listener.remove());
       });
 
       await AdMob.prepareRewardVideoAd(options);
