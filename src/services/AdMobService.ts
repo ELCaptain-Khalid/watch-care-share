@@ -72,11 +72,11 @@ class AdMobService {
 
     try {
       // Listen for the ad to be dismissed
-      AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
+      const dismissListener = AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
         console.log('Interstitial ad dismissed');
         if (onDismiss) onDismiss();
         // Remove listener after use
-        AdMob.removeAllListeners();
+        dismissListener.remove();
       });
 
       await AdMob.prepareInterstitial(options);
@@ -84,7 +84,7 @@ class AdMobService {
       console.log('Interstitial ad shown successfully');
     } catch (error) {
       console.error('Error showing interstitial ad:', error);
-      AdMob.removeAllListeners();
+      // No need to call removeAllListeners since we use the remove() method on individual listeners
     }
   }
 
@@ -98,17 +98,18 @@ class AdMobService {
 
     try {
       // Listen for reward
-      AdMob.addListener(RewardAdPluginEvents.Rewarded, (info: AdMobRewardItem) => {
+      const rewardListener = AdMob.addListener(RewardAdPluginEvents.Rewarded, (info: AdMobRewardItem) => {
         console.log('Rewarded ad reward received:', info);
         if (onReward) onReward(info);
       });
 
       // Listen for dismissal
-      AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+      const dismissListener = AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
         console.log('Rewarded ad dismissed');
         if (onDismiss) onDismiss();
         // Remove listeners after use
-        AdMob.removeAllListeners();
+        rewardListener.remove();
+        dismissListener.remove();
       });
 
       await AdMob.prepareRewardVideoAd(options);
@@ -116,7 +117,7 @@ class AdMobService {
       console.log('Rewarded ad shown successfully');
     } catch (error) {
       console.error('Error showing rewarded ad:', error);
-      AdMob.removeAllListeners();
+      // No need to call removeAllListeners since we use the remove() method on individual listeners
     }
   }
 
