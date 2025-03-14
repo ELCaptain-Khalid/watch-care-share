@@ -19,6 +19,7 @@ const TEST_REWARDED_AD_ID = {
 
 class AdMobService {
   private isInitialized = false;
+  private listeners: Array<{ remove: () => void }> = [];
 
   constructor() {
     this.initialize();
@@ -26,15 +27,25 @@ class AdMobService {
 
   async initialize() {
     try {
-      await AdMob.initialize();
-      this.isInitialized = true;
-      console.log('AdMob initialized successfully');
+      // Only initialize if we're in a Capacitor environment
+      if (window.Capacitor) {
+        await AdMob.initialize();
+        this.isInitialized = true;
+        console.log('AdMob initialized successfully');
+      } else {
+        console.log('AdMob initialization skipped - not in a Capacitor environment');
+      }
     } catch (error) {
       console.error('Error initializing AdMob:', error);
     }
   }
 
   async showBanner() {
+    if (!window.Capacitor) {
+      console.log('Banner ad skipped - not in a Capacitor environment');
+      return;
+    }
+    
     if (!this.isInitialized) await this.initialize();
 
     const options: BannerAdOptions = {
@@ -54,6 +65,8 @@ class AdMobService {
   }
 
   async hideBanner() {
+    if (!window.Capacitor) return;
+    
     try {
       await AdMob.hideBanner();
       console.log('Banner ad hidden successfully');
@@ -63,6 +76,12 @@ class AdMobService {
   }
 
   async showInterstitial(onDismiss?: () => void) {
+    if (!window.Capacitor) {
+      console.log('Interstitial ad skipped - not in a Capacitor environment');
+      if (onDismiss) setTimeout(onDismiss, 1000);
+      return;
+    }
+    
     if (!this.isInitialized) await this.initialize();
 
     const options: AdOptions = {
@@ -71,24 +90,43 @@ class AdMobService {
     };
 
     try {
+      // Clean up any previous listeners
+      this.removeAllListeners();
+      
       // Listen for the ad to be dismissed
-      const dismissListenerPromise = AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
-        console.log('Interstitial ad dismissed');
-        if (onDismiss) onDismiss();
-        // Remove listener after use
-        dismissListenerPromise.then(listener => listener.remove());
-      });
+      const dismissListener = await AdMob.addListener(
+        InterstitialAdPluginEvents.Dismissed, 
+        () => {
+          console.log('Interstitial ad dismissed');
+          if (onDismiss) onDismiss();
+          // Remove listener after use
+          dismissListener.remove();
+        }
+      );
+      
+      this.listeners.push(dismissListener);
 
       await AdMob.prepareInterstitial(options);
       await AdMob.showInterstitial();
       console.log('Interstitial ad shown successfully');
     } catch (error) {
       console.error('Error showing interstitial ad:', error);
-      // No need to call removeAllListeners since we use the remove() method on individual listeners
+      this.removeAllListeners();
+      if (onDismiss) onDismiss();
     }
   }
 
   async showRewardedAd(onReward?: (reward: AdMobRewardItem) => void, onDismiss?: () => void) {
+    if (!window.Capacitor) {
+      console.log('Rewarded ad skipped - not in a Capacitor environment');
+      // Simulate reward after a delay in web environment
+      setTimeout(() => {
+        if (onReward) onReward({ type: 'coins', amount: 10 });
+        if (onDismiss) setTimeout(onDismiss, 500);
+      }, 2000);
+      return;
+    }
+    
     if (!this.isInitialized) await this.initialize();
 
     const options: AdOptions = {
@@ -97,28 +135,47 @@ class AdMobService {
     };
 
     try {
+      // Clean up any previous listeners
+      this.removeAllListeners();
+      
       // Listen for reward
-      const rewardListenerPromise = AdMob.addListener(RewardAdPluginEvents.Rewarded, (info: AdMobRewardItem) => {
-        console.log('Rewarded ad reward received:', info);
-        if (onReward) onReward(info);
-      });
-
+      const rewardListener = await AdMob.addListener(
+        RewardAdPluginEvents.Rewarded, 
+        (info: AdMobRewardItem) => {
+          console.log('Rewarded ad reward received:', info);
+          if (onReward) onReward(info);
+        }
+      );
+      
       // Listen for dismissal
-      const dismissListenerPromise = AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
-        console.log('Rewarded ad dismissed');
-        if (onDismiss) onDismiss();
-        // Remove listeners after use
-        rewardListenerPromise.then(listener => listener.remove());
-        dismissListenerPromise.then(listener => listener.remove());
-      });
+      const dismissListener = await AdMob.addListener(
+        RewardAdPluginEvents.Dismissed, 
+        () => {
+          console.log('Rewarded ad dismissed');
+          if (onDismiss) onDismiss();
+          // Remove listeners after use
+          this.removeAllListeners();
+        }
+      );
+      
+      this.listeners.push(rewardListener, dismissListener);
 
       await AdMob.prepareRewardVideoAd(options);
       await AdMob.showRewardVideoAd();
       console.log('Rewarded ad shown successfully');
     } catch (error) {
       console.error('Error showing rewarded ad:', error);
-      // No need to call removeAllListeners since we use the remove() method on individual listeners
+      this.removeAllListeners();
+      if (onDismiss) onDismiss();
     }
+  }
+
+  private removeAllListeners() {
+    // Remove all active listeners
+    for (const listener of this.listeners) {
+      listener.remove();
+    }
+    this.listeners = [];
   }
 
   private getPlatformAdId(adIds: { ios: string; android: string }): string {
@@ -131,6 +188,13 @@ class AdMobService {
       return 'ios';
     }
     return 'android';
+  }
+}
+
+// Add Window capacitor type for TypeScript
+declare global {
+  interface Window {
+    Capacitor?: any;
   }
 }
 

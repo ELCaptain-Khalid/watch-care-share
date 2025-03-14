@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { ImpactCard } from "@/components/ImpactCard";
 import { Stats } from "@/components/Stats";
 import { StoryCarousel } from "@/components/StoryCarousel";
+import { CommonCauses } from "@/components/CommonCauses";
 import { ArrowRightCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
@@ -38,6 +39,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <Hero />
       <Stats />
+      <CommonCauses />
       
       <div className="container mx-auto px-4 py-16">
         <motion.div
